@@ -10,7 +10,7 @@
   "icons": [
     {
       "src": "TemplateData/icons/unity-logo-dark.png",
-      "sizes": "144x144",
+      "sizes": "256x256",
       "type": "image/png",
       "purpose": "any maskable"
     }
