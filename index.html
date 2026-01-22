@@ -30,6 +30,16 @@
         color: white;
         font-family: sans-serif;
         text-align: center;
+        flex-direction: column;
+        /* Ensures content stacks vertically */
+      }
+
+      /* Add spacing between the English and French lines */
+      #orientation-warning p {
+        margin: 20px 0;
+        font-size: 1.2rem;
+        /* Optional: makes text slightly larger */
+        line-height: 1.5;
       }
     }
   </style>
@@ -39,6 +49,7 @@
   <div id="orientation-warning">
     <div class="content">
       <p>Please rotate your device to play</p>
+      <p>Tournez votre téléphone pour jouer s'il vous plaît</p>
     </div>
   </div>
 
