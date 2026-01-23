@@ -45,7 +45,7 @@
       }
     }
 
-    /* 2. START SCREEN (Visible in Landscape before clicking) */
+    /* 2. START SCREEN (Hidden by default for PC) */
     #start-screen {
       position: fixed;
       top: 0;
@@ -53,10 +53,9 @@
       width: 100%;
       height: 100%;
       background-color: rgba(0, 0, 0, 0.85);
-      /* Semi-transparent black */
       z-index: 9998;
-      /* Just below the orientation warning */
-      display: flex;
+      display: none;
+      /* CHANGED: Hidden by default so PC doesn't see it */
       align-items: center;
       justify-content: center;
       flex-direction: column;
@@ -132,32 +131,18 @@
 
     // Logic to handle the Start Screen
     startScreen.addEventListener('click', () => {
-      // 1. Try to enter fullscreen
       if (!document.fullscreenElement && container.requestFullscreen) {
         container.requestFullscreen().catch(err => {
           console.log("Fullscreen blocked or not supported: " + err.message);
         });
       }
 
-      // 2. Try to lock orientation (Android only)
       if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock("landscape").catch(console.error);
       }
 
-      // 3. Hide the start screen so the game is visible
       startScreen.style.display = "none";
     });
-
-    // Optional: Show start screen again if they exit fullscreen? 
-    // Usually better to leave it hidden so they can play in windowed mode if they want.
-    // Uncomment below if you want to force the pause screen when exiting fullscreen.
-    /*
-    document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement) {
-        startScreen.style.display = "flex";
-      }
-    });
-    */
 
     function unityShowBanner(msg, type) {
       function updateBannerVisibility() {
@@ -191,11 +176,15 @@
       showBanner: unityShowBanner,
     };
 
+    // CHECK FOR MOBILE
     if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
       var meta = document.createElement('meta');
       meta.name = 'viewport';
       meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
       document.getElementsByTagName('head')[0].appendChild(meta);
+
+      // NEW: Only make the start screen visible if we are actually on mobile
+      startScreen.style.display = "flex";
     }
 
     loadingBar.style.display = "block";
