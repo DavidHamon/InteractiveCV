@@ -9,12 +9,11 @@
   <link rel="stylesheet" href="TemplateData/style.css">
   <link rel="manifest" href="manifest.webmanifest">
   <style>
-    /* Warning is hidden by default */
+    /* 1. PORTRAIT WARNING (Highest Priority) */
     #orientation-warning {
       display: none;
     }
 
-    /* Only show on mobile devices in portrait mode */
     @media only screen and (orientation: portrait) and (max-width: 900px) {
       #orientation-warning {
         display: flex;
@@ -24,23 +23,71 @@
         width: 100%;
         height: 100%;
         background-color: #000;
-        z-index: 9999;
+        z-index: 10000;
+        /* Always on top */
         align-items: center;
         justify-content: center;
         color: white;
         font-family: sans-serif;
         text-align: center;
         flex-direction: column;
-        /* Ensures content stacks vertically */
       }
 
-      /* Add spacing between the English and French lines */
       #orientation-warning p {
         margin: 20px 0;
         font-size: 1.2rem;
-        /* Optional: makes text slightly larger */
         line-height: 1.5;
       }
+
+      /* Hide the start screen if we are in portrait mode (warning takes precedence) */
+      #start-screen {
+        display: none !important;
+      }
+    }
+
+    /* 2. START SCREEN (Visible in Landscape before clicking) */
+    #start-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      /* Semi-transparent black */
+      z-index: 9998;
+      /* Just below the orientation warning */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    /* The Play Button Styling */
+    .play-btn {
+      background-color: #ffffff;
+      color: #000;
+      border: none;
+      padding: 20px 40px;
+      font-size: 24px;
+      font-family: sans-serif;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+      transition: transform 0.2s;
+    }
+
+    .play-btn:active {
+      transform: scale(0.95);
+    }
+
+    .start-text {
+      color: white;
+      font-family: sans-serif;
+      margin-top: 20px;
+      font-size: 14px;
+      opacity: 0.8;
     }
   </style>
 </head>
@@ -53,6 +100,11 @@
     </div>
   </div>
 
+  <div id="start-screen">
+    <button class="play-btn">▶ PLAY / JOUER</button>
+    <p class="start-text">Tap to enter Fullscreen / Appuyez pour le plein écran</p>
+  </div>
+
   <div id="unity-container">
     <canvas id="unity-canvas" width=100 height=100 tabindex="-1"></canvas>
     <div id="unity-loading-bar">
@@ -63,6 +115,7 @@
     </div>
     <div id="unity-warning"> </div>
   </div>
+
   <script>
     window.addEventListener("load", function () {
       if ("serviceWorker" in navigator) {
@@ -75,6 +128,36 @@
     var loadingBar = document.querySelector("#unity-loading-bar");
     var progressBarFull = document.querySelector("#unity-progress-bar-full");
     var warningBanner = document.querySelector("#unity-warning");
+    var startScreen = document.querySelector("#start-screen");
+
+    // Logic to handle the Start Screen
+    startScreen.addEventListener('click', () => {
+      // 1. Try to enter fullscreen
+      if (!document.fullscreenElement && container.requestFullscreen) {
+        container.requestFullscreen().catch(err => {
+          console.log("Fullscreen blocked or not supported: " + err.message);
+        });
+      }
+
+      // 2. Try to lock orientation (Android only)
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock("landscape").catch(console.error);
+      }
+
+      // 3. Hide the start screen so the game is visible
+      startScreen.style.display = "none";
+    });
+
+    // Optional: Show start screen again if they exit fullscreen? 
+    // Usually better to leave it hidden so they can play in windowed mode if they want.
+    // Uncomment below if you want to force the pause screen when exiting fullscreen.
+    /*
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) {
+        startScreen.style.display = "flex";
+      }
+    });
+    */
 
     function unityShowBanner(msg, type) {
       function updateBannerVisibility() {
